@@ -64,6 +64,7 @@ void Initialize() {
 
     program.Load("shaders/vertex_textured.glsl", "shaders/fragment_textured.glsl");
 
+    //Set up all of our matrices for the scene
     viewMatrix = glm::mat4(1.0f);
 
     princeMatrix = glm::mat4(1.0f);
@@ -107,13 +108,20 @@ void Update() {
     float ticks = (float)SDL_GetTicks() / 1000.0f;
     float deltaTime = ticks - lastTicks;
     lastTicks = ticks;
+    
+    //Modify our variables to get things translating and rotating properly
     prince_x = -1.0f * deltaTime;
     prince_rotate = 35.2 * deltaTime;
     earth_rotate = -15 * deltaTime;
+
+    //For the king, I chose to redraw and replace him every update instead of placing once
+    //and scaling him up and down because I wasn't too sure how to get his current size or 
+    //individual numbers from his matrix -- seems to work fine for now
+
     if (king_scale > 2.5f || king_scale <  1.6f) {
         growing = !growing;
     }
-
+ 
     king_scale += growing ? 0.01f : -0.01f;
 
     princeMatrix = glm::rotate(princeMatrix, glm::radians(prince_rotate), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -127,6 +135,7 @@ void Update() {
 
 }
 
+//Just methods to do the drawing for each sprite, as per the video
 void DrawPrince() {
     program.SetModelMatrix(princeMatrix);
     glBindTexture(GL_TEXTURE_2D, princeTextureID);
@@ -146,6 +155,7 @@ void DrawKing() {
 }
 
 void DrawSpace() {
+    //I also wasn't sure if there was a way to render space only once 
     program.SetModelMatrix(spaceMatrix);
     glBindTexture(GL_TEXTURE_2D, spaceTextureID);
     glDrawArrays(GL_TRIANGLES, 0, 6);
