@@ -136,7 +136,7 @@ bool rightCollision() {
 //Collision with the roof/floor of the window
 bool RFCollision() {
     float roofdist = fabs(ball_position.y - 7.5f) - ((7.5f+0.5f)/2.0f);
-    
+    float floordist = fabs(ball_position.y - 7.5f) - ((-7.5f - 0.5f) / 2.0f);
     return ((roofdist < 0));
 }
 
