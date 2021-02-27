@@ -23,7 +23,7 @@ glm::mat4 viewMatrix, player1Matrix, player2Matrix, ballMatrix, projectionMatrix
 
 float lastTicks = 0.0f;
 float player_speed = 3.0f;
-float ball_speed = 2.0f;
+float ball_speed = 1.5f;
 
 glm::vec3 player1_position = glm::vec3(-4.75f, 0.0f, 0.0f);
 glm::vec3 player1_movement = glm::vec3(0, 0, 0);
@@ -97,22 +97,22 @@ void ProcessInput() {
         if (playing==false) {
             if (keys[SDL_SCANCODE_SPACE]) {
                 playing = true;
-                ball_movement.x = 0.0f;
-                ball_movement.y = 1.0f;
+                ball_movement.x = ball_speed;
+                ball_movement.y = ball_speed;
             }
         }
         
-        if (keys[SDL_SCANCODE_W]) {
+        if (keys[SDL_SCANCODE_W] && (player1_position.y <2.75f) ) {
             player1_movement.y = 1.0f;
         }
-        else if (keys[SDL_SCANCODE_S]) {
+        else if (keys[SDL_SCANCODE_S] && (player1_position.y > -2.75f)) {
             player1_movement.y = -1.0f;
         }
 
-        if (keys[SDL_SCANCODE_UP]) {
+        if (keys[SDL_SCANCODE_UP] && (player2_position.y < 2.75f)) {
             player2_movement.y = 1.0f;
         }
-        else if (keys[SDL_SCANCODE_DOWN]) {
+        else if (keys[SDL_SCANCODE_DOWN] && (player2_position.y > -2.75f)) {
             player2_movement.y = -1.0f;
         }
 
@@ -133,12 +133,6 @@ bool rightCollision() {
     return ((xdist < 0) && (ydist < 0));
 }
 
-//Collision with the roof/floor of the window
-bool RFCollision() {
-    float roofdist = fabs(ball_position.y - 7.5f) - ((7.5f+0.5f)/2.0f);
-    float floordist = fabs(ball_position.y - 7.5f) - ((-7.5f - 0.5f) / 2.0f);
-    return ((roofdist < 0));
-}
 
 void Update() {
     float ticks = (float)SDL_GetTicks() / 1000.0f;
@@ -161,11 +155,24 @@ void Update() {
     ballMatrix = glm::translate(ballMatrix, ball_position);
     ballMatrix = glm::scale(ballMatrix, glm::vec3(0.5f, 0.5f, 0.0f));
 
-    if (leftCollision() || rightCollision() ) {
-        ball_movement.x *= -1.0f;
+    if (leftCollision()) {
+        ball_movement.x = ball_speed;
     }
-    if (RFCollision()) {
-        ball_movement.y *= -1.0f;
+    if (rightCollision()) {
+        ball_movement.x = -ball_speed;
+    }
+
+    if (ball_position.y >= 3.55f) {
+        ball_movement.y = -ball_speed;
+    }
+    if (ball_position.y <= -3.55f) {
+        ball_movement.y = ball_speed;
+    }
+    
+    if (ball_position.x >= 4.75f || ball_position.x <= -4.75f) {
+        ball_movement.x = 0;
+        ball_movement.y = 0;
+        wallHit = true;
     }
 }
 
