@@ -1,0 +1,25 @@
+﻿  main.cpp
+C:\CS3113\P3\CS3113Project3\CS3113Project3\main.cpp(74,23): warning C4018: '<': signed/unsigned mismatch
+C:\CS3113\P3\CS3113Project3\CS3113Project3\main.cpp(124,37): warning C4244: '=': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+C:\CS3113\P3\CS3113Project3\CS3113Project3\main.cpp(129,46): warning C4244: '=': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+C:\CS3113\P3\CS3113Project3\CS3113Project3\main.cpp(134,46): warning C4244: '=': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+C:\CS3113\P3\CS3113Project3\CS3113Project3\main.cpp(139,43): warning C4244: '=': conversion from 'int' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+C:\CS3113\P3\CS3113Project3\CS3113Project3\main.cpp(182,31): warning C4305: '=': truncation from 'double' to 'float'
+C:\CS3113\P3\CS3113Project3\CS3113Project3\main.cpp(183,31): warning C4305: '=': truncation from 'double' to 'float'
+  CS3113Project3.vcxproj -> C:\CS3113\P3\CS3113Project3\Debug\CS3113Project3.exe
