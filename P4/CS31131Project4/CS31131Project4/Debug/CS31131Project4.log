@@ -1,0 +1,7 @@
+﻿  main.cpp
+C:\CS3113\P4\CS31131Project4\CS31131Project4\main.cpp(73,33): warning C4305: '=': truncation from 'double' to 'float'
+C:\CS3113\P4\CS31131Project4\CS31131Project4\main.cpp(86,33): warning C4305: '=': truncation from 'double' to 'float'
+C:\CS3113\P4\CS31131Project4\CS31131Project4\main.cpp(98,33): warning C4305: '=': truncation from 'double' to 'float'
+C:\CS3113\P4\CS31131Project4\CS31131Project4\main.cpp(267,96): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\CS3113\P4\CS31131Project4\CS31131Project4\main.cpp(270,99): warning C4305: 'argument': truncation from 'double' to 'float'
+  CS31131Project4.vcxproj -> C:\CS3113\P4\CS31131Project4\Debug\CS31131Project4.exe
