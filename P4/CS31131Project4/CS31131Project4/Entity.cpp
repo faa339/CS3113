@@ -155,6 +155,7 @@ void Entity::CheckCollisionsY(Entity* objects, int objectCount)
                 }
                 if (velocity.y < 0) {
                     object->isActive = false;
+                    Mix_PlayChannel(-1, killSound, 0);
                     return;
                 }
             }
@@ -239,7 +240,7 @@ void Entity::AIJumper() {
 void Entity::AIPatroller(Entity* player) {
     switch (aiState) {
     case IDLE:
-        if (glm::distance(position, player->position) < 2.5) {
+        if (glm::distance(position, player->position) < 3.5) {
             aiState = MOVING;
             movement.x = 1;
         }

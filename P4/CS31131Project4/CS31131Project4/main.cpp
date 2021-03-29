@@ -12,6 +12,8 @@
 #include "ShaderProgram.h"
 #include "Util.h"
 #include "Entity.h"
+#include "SDL_mixer.h"
+
 
 #define PLATFORM_COUNT 17
 #define ENEMY_COUNT 3
@@ -33,6 +35,9 @@ struct GameState {
 };
 
 GameState state;
+Mix_Music* music;
+Mix_Chunk* bounce;
+Mix_Chunk* kill;
 
 void platformInit(GLuint Texture) {
     for (int i = 0; i < 10; i++) {
@@ -104,7 +109,7 @@ void enemyInit(GLuint Texture) {
 
 
 void Initialize() {
-    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     displayWindow = SDL_CreateWindow("Rise of the AI!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_OPENGL);
     SDL_GLContext context = SDL_GL_CreateContext(displayWindow);
     SDL_GL_MakeCurrent(displayWindow, context);
@@ -156,6 +161,15 @@ void Initialize() {
 
     GLuint Font = Util::LoadTexture("font.png");
     state.font = Font;
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
+    music = Mix_LoadMUS("acidTrumpetKevinMacleod.mp3");
+    Mix_VolumeMusic(MIX_MAX_VOLUME / 2);
+    Mix_PlayMusic(music, -1);
+    bounce = Mix_LoadWAV("jalastramJump.wav");
+    kill = Mix_LoadWAV("mrthenoronhaHorrorDeath.wav");
+    state.player->killSound = kill;
+    Mix_Volume(-1, MIX_MAX_VOLUME / 6);
+
 }
 
 void ProcessInput() {
@@ -181,6 +195,7 @@ void ProcessInput() {
             case SDLK_SPACE:
                 if (state.player->collidedBot && state.player->endBad==false) {
                     state.player->jump = true;
+                    Mix_PlayChannel(-1, bounce, 0);
                 }
                 break;
             }

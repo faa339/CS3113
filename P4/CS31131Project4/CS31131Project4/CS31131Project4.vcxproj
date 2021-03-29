@@ -149,6 +149,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Entity.h" />
+    <ClInclude Include="SDL_mixer.h" />
     <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="Util.h" />
   </ItemGroup>

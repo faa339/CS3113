@@ -10,6 +10,7 @@
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "ShaderProgram.h"
+#include "SDL_mixer.h"
 
 enum eType{ PLAYER, PLATFORM, ENEMY};
 enum AIType{CHASER, JUMPER, PATROLLER};
@@ -63,6 +64,8 @@ public:
     int animIndex = 0;
     int animCols = 0;
     int animRows = 0;
+    Mix_Chunk* killSound;
+
 
     Entity();
 
