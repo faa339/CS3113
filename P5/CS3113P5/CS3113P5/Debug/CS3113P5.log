@@ -1,0 +1,5 @@
+﻿  main.cpp
+C:\CS3113\P5\CS3113P5\CS3113P5\main.cpp(189,84): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\CS3113\P5\CS3113P5\CS3113P5\main.cpp(194,69): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\CS3113\P5\CS3113P5\CS3113P5\main.cpp(199,67): warning C4305: 'argument': truncation from 'double' to 'float'
+  CS3113P5.vcxproj -> C:\CS3113\P5\CS3113P5\Debug\CS3113P5.exe
