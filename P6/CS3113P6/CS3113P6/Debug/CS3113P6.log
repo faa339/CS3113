@@ -1,0 +1,7 @@
+﻿  Entity.cpp
+C:\CS3113\P6\CS3113P6\CS3113P6\Entity.cpp(170,53): warning C4244: '+=': conversion from 'double' to 'T', possible loss of data
+          with
+          [
+              T=float
+          ]
+  CS3113P6.vcxproj -> C:\CS3113\P6\CS3113P6\Debug\CS3113P6.exe
