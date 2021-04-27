@@ -9,7 +9,6 @@ Map::Map(int width, int height, unsigned int* levelData, GLuint textureID, float
 	this->tile_size = tile_size;
 	this->tile_count_x = tile_count_x;
 	this->tile_count_y = tile_count_y;
-
 	this->Build();
 }
 
@@ -19,7 +18,6 @@ void Map::Build()
 		for (int x = 0; x < this->width; x++) {
 
 			int tile = levelData[y * width + x];
-			if (tile == 0) continue;
 
 			float u = (float)(tile % tile_count_x) / (float)tile_count_x;
 			float v = (float)(tile / tile_count_x) / (float)tile_count_y;

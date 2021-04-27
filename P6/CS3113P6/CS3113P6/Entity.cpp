@@ -8,6 +8,8 @@ Entity::Entity()
     velocity = glm::vec3(0);
     speed = 0;
     modelMatrix = glm::mat4(1.0f);
+    dirVec = glm::vec3(0);
+    currentBullet = 0;
     //killSound = Mix_LoadWAV("mrthenoronhaHorrorDeath.wav");
     //Mix_Volume(-1, MIX_MAX_VOLUME / 6);
 
@@ -19,7 +21,7 @@ void Entity::Update(float deltaTime, Entity* player, Entity* objects, int object
 
 
     if (entityType == ENEMY) {
-        AI(player);
+        AI(player, deltaTime);
     }
 
     collidedTop = false;
@@ -69,10 +71,16 @@ void Entity::Update(float deltaTime, Entity* player, Entity* objects, int object
             }
         }
     }
-
+    if (reloading) {
+        reloadTime -= deltaTime;
+        if (reloadTime <= 0) {
+            reloadTime = 1.5f;
+            reloading = false;
+        }
+    }
     modelMatrix = glm::mat4(1.0f);
     modelMatrix = glm::translate(modelMatrix, position);
-    modelMatrix = glm::rotate(modelMatrix, glm::radians(player->lookRotation), glm::vec3(0, 0, 1));
+    modelMatrix = glm::rotate(modelMatrix, lookRotation, glm::vec3(0, 0, 1));
 }
 
 void Entity::DrawSpriteFromTextureAtlas(ShaderProgram* program, GLuint textureID, int index)
@@ -149,6 +157,12 @@ void Entity::CheckCollisionsY(Entity* objects, int objectCount)
 
         if (CheckCollision(object))
         {            
+            if (object->entityType == BULLET) {
+                isActive = false;
+                object->isActive = false;
+                return;
+            }
+
             float ydist = fabs(position.y - object->position.y);
             float penetrationY = fabs(ydist - (height / 2.0f) - (object->height / 2.0f));
             if (velocity.y > 0) {
@@ -162,16 +176,7 @@ void Entity::CheckCollisionsY(Entity* objects, int objectCount)
                 collidedBot = true;
             }
 
-            if (object->entityType == ENEMY && entityType==PLAYER) {
-                if (object->position.y >= position.y) {
-                    gotHit = true;
-                }else{
-                    object->isActive = false;
-                    velocity.y += (jumpPower * 0.85);
-                    //Mix_PlayChannel(-1, killSound, 0);
-                }
-            }
-
+            
         }
     }
 }
@@ -184,9 +189,10 @@ void Entity::CheckCollisionsX(Entity* objects, int objectCount)
 
         if (CheckCollision(object))
         {
-            if (object->entityType == ENEMY) {
-                gotHit = true;
-                return;
+            if (object->entityType == BULLET) {
+                isActive = false;
+                object->isActive = false;
+
             }
             float xdist = fabs(position.x - object->position.x);
             float penetrationX = fabs(xdist - (width / 2.0f) - (object->width / 2.0f));
@@ -270,34 +276,110 @@ void Entity::CheckCollisionsX(Map* map)
     }
 }
 
-void Entity::AIJumper() {
+void Entity::Shoot() {
+    if (currentBullet < maxAmmo && reloading==false) {
+        Bullets[currentBullet].position = position;
+        Bullets[currentBullet].movement = dirVec;
+        Bullets[currentBullet].lookRotation = lookRotation;
+        Bullets[currentBullet].isActive = true;
+        currentBullet++;
+    }
+    else {
+        currentBullet = 0;
+        reloading = true;
+        for (int i = 0; i < maxAmmo; i++) {
+            if ((glm::distance(position, Bullets[i].position) > 15.0f) && Bullets[i].isActive==true)
+                Bullets[i].isActive = false; //Small optimization -- don't shoot things that aren't close!
+        }
+    }
+}
 
+void Entity::AIDasher(Entity* player, float deltaTime) {
+    switch (aiState) {
+    case IDLE:
+        if (glm::distance(position, player->position) < 5.0f) {
+            TurnHelperAI(player);
+            aiState = DASHING;
+        }
+        break;
+    case DASHING:
+        if (glm::distance(position, savedPoint) < 0.1) {
+            if (waitTime > 0) {
+                waitTime -= deltaTime;
+                break;
+            }
+            else {
+                waitTime = 0.8f;
+                if (glm::distance(position, player->position) < 5.0f) {
+                    TurnHelperAI(player);
+                    movement = dirVec;
+                    break;
+                }
+                else {
+                    movement = glm::vec3(0);
+                    aiState = IDLE;
+                }
+            }
+        }
+        else {
+            movement = dirVec;
+        }
+    }
 }
 
 void Entity::AIChaser(Entity* player) {
     switch (aiState) {
     case IDLE:
-        if (glm::distance(position, player->position) < 4.0f)
+        if (glm::distance(position, player->position) < 3.0f)
             aiState = WALKING;
         break;
     case WALKING:
-        if(player->position.x < position.x)
-            movement.x = -1;
-        else
-            movement.x = 1;
+        TurnHelperAI(player);
+        movement = dirVec;
         break;
     }
 }
 
-void Entity::AI(Entity* player) {
-    movement = glm::vec3(0);
+void Entity::AIShooter(Entity* player, float deltaTime) {
+    switch (aiState) {
+    case IDLE: 
+        if (glm::distance(position, player->position) < 10.0f) {
+            TurnHelperAI(player);
+            aiState = SHOOTING;
+        }
+    case SHOOTING:
+        TurnHelperAI(player);
+        if (shootSpacing > 0) {
+            shootSpacing -= deltaTime;
+        }
+        else {
+            shootSpacing = 0.35f;
+            Shoot();
+        }
+        break;
+    }
+}
 
+
+void Entity::AI(Entity* player, float deltaTime) {
+    movement = glm::vec3(0);
     switch (aiType) {
     case CHASER:
         AIChaser(player);
         break;
-    case JUMPER:
-        AIJumper();
+    case DASHER:
+        AIDasher(player, deltaTime);
+        break;
+    case SHOOTER:
+        AIShooter(player, deltaTime);
         break;
     }
+}
+
+void Entity::TurnHelperAI(Entity* player) {
+    savedPoint = player->position;
+    float pointXDist = savedPoint.x - position.x;
+    float pointYDist = savedPoint.y - position.y;
+    dirVec = glm::normalize(glm::vec3(pointXDist, pointYDist, 0));
+    lookRotation = glm::atan(dirVec.y, dirVec.x);
 }

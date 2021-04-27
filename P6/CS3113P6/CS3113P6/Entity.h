@@ -15,10 +15,10 @@
 #include "Map.h"
 #include "SDL_mixer.h"
 
-enum EntityType {PLAYER, PLATFORM, ENEMY};
+enum EntityType {PLAYER, PLATFORM, ENEMY, BULLET};
 
-enum AIType { CHASER, JUMPER };
-enum AIState { IDLE, WALKING };
+enum AIType { CHASER, DASHER, SHOOTER, };
+enum AIState { IDLE, WALKING, DASHING, SHOOTING};
 
 class Entity {
 public:
@@ -30,6 +30,15 @@ public:
     glm::vec3 movement;
     glm::vec3 acceleration;
     glm::vec3 velocity;
+    glm::vec3 dirVec;
+
+    glm::vec3 savedPoint; //For enemies
+
+    Entity* Bullets;
+    int maxAmmo;
+    int currentBullet;
+    float waitTime;
+    float shootSpacing;
 
     float speed;
     float jumpPower = 0;
@@ -47,6 +56,8 @@ public:
 
     bool endGood;
     bool gotHit;
+    bool reloading = false;
+    float reloadTime = 1.5f;
 
     GLuint textureID;
 
@@ -71,7 +82,10 @@ public:
     void Update(float deltaTime, Entity* player, Entity* objects, int objectCount, Map* map);
     void Render(ShaderProgram* program);
     void DrawSpriteFromTextureAtlas(ShaderProgram* program, GLuint textureID, int index);
-    void AI(Entity* player);
-    void AIJumper();
+    void Shoot();
+    void AI(Entity* player, float deltaTime);
+    void AIDasher(Entity* player, float deltaTime);
+    void AIShooter(Entity* player, float deltaTime);
     void AIChaser(Entity* player);
+    void TurnHelperAI(Entity* player);
 };
