@@ -46,7 +46,9 @@ void Level3::Initialize() {
 	GLuint characters = Util::LoadTexture("characters.png", false);
 	state.map = new Map(LEVEL3_WIDTH, LEVEL3_HEIGHT, level3_data, mapTexID, 1.0f, 8, 1);
 	Mix_Chunk* gunshot = Mix_LoadWAV("gunShot_cjdeets.wav");
-	Mix_Chunk* dashSound = Mix_LoadWAV("dasher.wav");
+	Mix_Chunk* dashSound = Mix_LoadWAV("bossDasher.wav");
+	Mix_Chunk* death = Mix_LoadWAV("playerDeath.wav");
+	Mix_Chunk* bossDeath = Mix_LoadWAV("bossDeath.wav");
 	state.player = new Entity();
 	state.player->entityType = PLAYER;
 	state.player->textureID = characters;
@@ -62,6 +64,7 @@ void Level3::Initialize() {
 	state.player->reloadingClock = 2.0f;
 	state.player->Bullets = new Entity[state.player->maxAmmo];
 	state.player->shotSound = gunshot;
+	state.player->deathSound = death;
 	for (int i = 0; i < state.player->maxAmmo; i++) {
 		state.player->Bullets[i].entityType = BULLET;
 		state.player->Bullets[i].speed = 9.5f;
@@ -94,6 +97,7 @@ void Level3::Initialize() {
 	state.enemies[0].Bullets = new Entity[state.enemies[0].maxAmmo];
 	state.enemies[0].shotSound = gunshot;
 	state.enemies[0].dasherSound = dashSound;
+	state.enemies[0].deathSound = bossDeath;
 	for (int i = 0; i < state.enemies[0].maxAmmo; i++) {
 		state.enemies[0].Bullets[i].entityType = BULLET;
 		state.enemies[0].Bullets[i].speed = 9.0f;
@@ -123,6 +127,7 @@ void Level3::Update(float deltaTime) {
 
 	state.player->Update(deltaTime, state.player, state.enemies, ENEMY_COUNT, state.map);
 	if (state.player->gotHit) {
+		Mix_PlayChannel(-1, state.player->deathSound, 0);
 		state.player->gotHit = false;
 		Reset();
 	}
@@ -139,8 +144,10 @@ void Level3::Update(float deltaTime) {
 	for (int i = 0; i < state.player->maxAmmo; i++)
 		state.player->Bullets[i].Update(deltaTime, state.player, NULL, 0, state.map);
 
-	if (state.enemies[0].BossHP == 0)
+	if (state.enemies[0].BossHP == 0) {
+		Mix_PlayChannel(-1, state.enemies[0].deathSound, 0);
 		state.player->endGood = true;
+	}
 };
 
 

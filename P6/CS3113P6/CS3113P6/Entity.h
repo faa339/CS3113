@@ -69,7 +69,7 @@ public:
 
     Mix_Chunk* shotSound;
     Mix_Chunk* dasherSound;
-
+    Mix_Chunk* deathSound;
     glm::mat4 modelMatrix;
 
     int animIndex = 0;

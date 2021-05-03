@@ -46,7 +46,7 @@ void Level2::Initialize() {
 	state.map = new Map(LEVEL2_WIDTH, LEVEL2_HEIGHT, level2_data, mapTexID, 1.0f, 8, 1);
 	Mix_Chunk* gunshot = Mix_LoadWAV("gunShot_cjdeets.wav");
 	Mix_Chunk* dashSound = Mix_LoadWAV("dasher.wav");
-
+	Mix_Chunk* death = Mix_LoadWAV("playerDeath.wav");
 	state.player = new Entity();
 	state.player->entityType = PLAYER;
 	state.player->textureID = characters;
@@ -62,6 +62,7 @@ void Level2::Initialize() {
 	state.player->reloadingClock = 2.0f;
 	state.player->Bullets = new Entity[state.player->maxAmmo];
 	state.player->shotSound = gunshot;
+	state.player->deathSound = death;
 	for (int i = 0; i < state.player->maxAmmo; i++) {
 		state.player->Bullets[i].entityType = BULLET;
 		state.player->Bullets[i].speed = 9.5f;
@@ -173,6 +174,8 @@ void Level2::Update(float deltaTime) {
 	}
 	state.player->Update(deltaTime, state.player, state.enemies, ENEMY_COUNT, state.map);
 	if (state.player->gotHit) {
+		Mix_PlayChannel(-1, state.player->deathSound, 0);
+
 		state.player->gotHit = false;
 		Reset();
 	}
