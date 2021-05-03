@@ -18,6 +18,7 @@ struct GameState {
 	Entity* player;
 	Entity* enemies;
 	int nextScene;
+	GLuint font;
 };
 
 class Scene {

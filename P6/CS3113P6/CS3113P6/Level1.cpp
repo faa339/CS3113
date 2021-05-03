@@ -3,6 +3,7 @@
 #define LEVEL1_HEIGHT 30
 #define ENEMY_COUNT 26
 
+
 unsigned int level1_data[] =
 {
 	0,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,0,
@@ -41,6 +42,7 @@ void Level1::Initialize() {
 	state.nextScene = -1;
 	bgModelMatrix = glm::mat4(1.0f);
 	backGround = Util::LoadTexture("spaceBG.png", true);
+	state.font = Util::LoadTexture("font.png", false);
 	GLuint mapTexID = Util::LoadTexture("mapTiles.png", false);
 	GLuint characters = Util::LoadTexture("characters.png", false);
 	state.map = new Map(LEVEL1_WIDTH, LEVEL1_HEIGHT, level1_data, mapTexID, 1.0f, 8, 1);
@@ -195,6 +197,11 @@ void Level1::Render(ShaderProgram* program) {
 	for (int i = 0; i < state.player->maxAmmo; i++)
 		state.player->Bullets[i].Render(program);
 
+	Util::DrawText(program, state.font, "WASD to move!", 0.2, 0.02, glm::vec3(3.0f, -2.1f, 0));
+	Util::DrawText(program, state.font, "Left Click to shoot!", 0.2, 0.02, glm::vec3(3.0f, -2.35f, 0));
+	Util::DrawText(program, state.font, "Left Shift to peek!", 0.2, 0.02, glm::vec3(3.0f, -2.6f, 0));
+	Util::DrawText(program, state.font, "R key to reload!", 0.2, 0.02, glm::vec3(3.0f, -2.85f, 0));
+	Util::DrawText(program, state.font, "ESC to pause!", 0.2, 0.02, glm::vec3(3.0f, -3.1f, 0));
 };
 
 void Level1::RenderBG(ShaderProgram* program) {

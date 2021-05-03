@@ -89,6 +89,7 @@ void Initialize() {
 	currentMousePos = glm::vec3(0);
 	sceneList[0] = new Startup();
 	sceneList[1] = new Level1();
+	
 	sceneList[2] = new Level2();
 	sceneList[3] = new Level3();
 
@@ -253,6 +254,9 @@ void Render() {
 		std::string timer = std::to_string(int(gameTimer)) + " seconds left!";
 		Util::DrawText(&program, font, timer, 0.2, 0.01, glm::vec3(1.25, 3.2, 0));
 		int bullets = 12 - currentScene->state.player->currentBullet;
+		if (paused && currentScene->state.player->endGood==false) {
+			Util::DrawText(&program, font, "PAUSED", 0.5, 0.01, glm::vec3(-1.1, 0, 0));
+		}
 		if (currentScene->state.player->reloading==false) {
 			std::string remainingBullets = std::to_string(bullets) + "/12";
 			Util::DrawText(&program, font, remainingBullets, 0.2, 0.01, glm::vec3(3.75, -3.2, 0));
