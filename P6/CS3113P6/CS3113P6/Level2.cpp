@@ -1,7 +1,7 @@
 #include "Level2.h"
 #define LEVEL2_WIDTH 30
 #define LEVEL2_HEIGHT 30
-#define ENEMY_COUNT 34
+#define ENEMY_COUNT 30
 
 unsigned int level2_data[] =
 {
@@ -122,15 +122,9 @@ void Level2::Initialize() {
 	state.enemies[19].position = glm::vec3(11.0f, -7.0f, 0);
 	state.enemies[20].position = glm::vec3(27.5f, -12.0f, 0);
 	state.enemies[21].position = glm::vec3(25.0f, -14.0f, 0);
-	state.enemies[22].position = glm::vec3(27.5f, -16.0f, 0);
-	//Done for performance issues regarding audio crashes
-	state.enemies[22].isActive = false;
-	state.enemies[23].position = glm::vec3(26.0f, -18.0f, 0);
-	state.enemies[23].isActive = false;
-	state.enemies[24].position = glm::vec3(26.0f, -18.0f, 0);
-	state.enemies[24].isActive = false;
+
 	
-	for (int i = 25; i < ENEMY_COUNT; i++) {
+	for (int i = 22; i < ENEMY_COUNT; i++) {
 		state.enemies[i].entityType = ENEMY;
 		state.enemies[i].textureID = characters;
 		state.enemies[i].animRows = 1;
@@ -156,15 +150,15 @@ void Level2::Initialize() {
 		}
 		state.enemies[i].isActive = true;
 	}
-	state.enemies[25].position = glm::vec3(7.0f, -10.0f, 0);
-	state.enemies[26].position = glm::vec3(22.0f, -10.0f, 0);
-	state.enemies[27].position = glm::vec3(9.0f, -11.0f, 0);
-	state.enemies[28].position = glm::vec3(20.0f, -11.0f, 0);
-	state.enemies[29].position = glm::vec3(14.0f, -15.0f, 0);
-	state.enemies[30].position = glm::vec3(10.0f, -16.0f, 0);
-	state.enemies[31].position = glm::vec3(19.0f, -16.0f, 0);
-	state.enemies[32].position = glm::vec3(12.0f, -25.0f, 0);
-	state.enemies[33].position = glm::vec3(17.0f, -25.0f, 0);
+	state.enemies[22].position = glm::vec3(7.0f, -10.0f, 0);
+	state.enemies[23].position = glm::vec3(22.0f, -10.0f, 0);
+	state.enemies[24].position = glm::vec3(9.0f, -11.0f, 0);
+	state.enemies[25].position = glm::vec3(20.0f, -11.0f, 0);
+	state.enemies[26].position = glm::vec3(14.0f, -15.0f, 0);
+	state.enemies[27].position = glm::vec3(10.0f, -16.0f, 0);
+	state.enemies[28].position = glm::vec3(19.0f, -16.0f, 0);
+	state.enemies[29].position = glm::vec3(14.0f, -18.0f, 0);
+
 };
 
 
@@ -274,27 +268,23 @@ void Level2::Reset() {
 	state.enemies[19].position = glm::vec3(11.0f, -7.0f, 0);
 	state.enemies[20].position = glm::vec3(27.5f, -12.0f, 0);
 	state.enemies[21].position = glm::vec3(25.0f, -14.0f, 0);
-	state.enemies[22].position = glm::vec3(27.5f, -16.0f, 0);
-	state.enemies[23].position = glm::vec3(26.0f, -18.0f, 0);
-	state.enemies[24].position = glm::vec3(26.0f, -18.0f, 0);
 
 	for (int i = 14; i < 25; i++) {
 		state.enemies[i].movement = glm::vec3(0);
 		state.enemies[i].aiState = IDLE;
 		state.enemies[i].isActive = true;
 	}
+	//Same as earlier, controlling for audio
 
-	state.enemies[25].position = glm::vec3(7.0f, -10.0f, 0);
-	state.enemies[26].position = glm::vec3(22.0f, -10.0f, 0);
-	state.enemies[27].position = glm::vec3(9.0f, -11.0f, 0);
-	state.enemies[28].position = glm::vec3(20.0f, -11.0f, 0);
-	state.enemies[29].position = glm::vec3(14.0f, -15.0f, 0);
-	state.enemies[30].position = glm::vec3(10.0f, -16.0f, 0);
-	state.enemies[31].position = glm::vec3(19.0f, -16.0f, 0);
-	state.enemies[32].position = glm::vec3(14.0f, -18.0f, 0);
-	state.enemies[33].position = glm::vec3(20.0f, -19.0f, 0);
-	state.enemies[34].position = glm::vec3(12.0f, -25.0f, 0);
-	state.enemies[35].position = glm::vec3(17.0f, -25.0f, 0);
+
+	state.enemies[22].position = glm::vec3(7.0f, -10.0f, 0);
+	state.enemies[23].position = glm::vec3(22.0f, -10.0f, 0);
+	state.enemies[24].position = glm::vec3(9.0f, -11.0f, 0);
+	state.enemies[25].position = glm::vec3(20.0f, -11.0f, 0);
+	state.enemies[26].position = glm::vec3(14.0f, -15.0f, 0);
+	state.enemies[27].position = glm::vec3(10.0f, -16.0f, 0);
+	state.enemies[28].position = glm::vec3(19.0f, -16.0f, 0);
+	state.enemies[29].position = glm::vec3(14.0f, -18.0f, 0);
 	for (int i = 25; i < ENEMY_COUNT; i++) {
 		state.enemies[i].currentBullet = 0;
 		state.enemies[i].reloading = false;
