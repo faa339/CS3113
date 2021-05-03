@@ -15,13 +15,17 @@
 #include "Util.h"
 #include "Entity.h"
 #include "Scene.h"
+#include "Startup.h"
 #include "Level1.h"
+#include "Level2.h"
+#include "Level3.h"
 
-#define ENEMY_COUNT 0
-#define SCENE_COUNT 1
+#define SCENE_COUNT 4
 SDL_Window* displayWindow;
 ShaderProgram program;
 glm::mat4 viewMatrix, modelMatrix, projectionMatrix;
+glm::mat4 viewMatrixUI, projectionMatrixUI;
+glm::vec3 currentMousePos;
 
 int windowWidth = 640;
 int windowHeight = 480;
@@ -32,11 +36,17 @@ float worldY;
 
 bool gameIsRunning = true;
 bool paused;
+bool peek;
 
 GLuint crosshair;
+GLuint font;
 
 Scene* currentScene;
 Scene* sceneList[SCENE_COUNT];
+
+Mix_Music* music;
+
+float gameTimer;
 
 void SwitchToScene(Scene* scene) {
 	currentScene = scene;
@@ -44,8 +54,8 @@ void SwitchToScene(Scene* scene) {
 }
 
 void Initialize() {
-	SDL_Init(SDL_INIT_VIDEO);
-	displayWindow = SDL_CreateWindow("Endrun", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_OPENGL);
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+	displayWindow = SDL_CreateWindow("Revanchist", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_OPENGL);
 	SDL_GLContext context = SDL_GL_CreateContext(displayWindow);
 	SDL_GL_MakeCurrent(displayWindow, context);
 
@@ -59,6 +69,10 @@ void Initialize() {
 	modelMatrix = glm::mat4(1.0f);
 	projectionMatrix = glm::ortho(-5.0f, 5.0f, -3.75f, 3.75f, -1.0f, 1.0f);
 
+	viewMatrixUI = glm::mat4(1.0f);
+	projectionMatrixUI = glm::ortho(-5.0f, 5.0f, -3.75f, 3.75f, -1.0f, 1.0f);
+
+
 	program.SetProjectionMatrix(projectionMatrix);
 	program.SetViewMatrix(viewMatrix);
 
@@ -68,75 +82,68 @@ void Initialize() {
 	glEnable(GL_BLEND);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-	crosshair = Util::LoadTexture("crosshair.png");
 
-	sceneList[0] = new Level1();
-	/*
-	enemies = new Entity[ENEMY_COUNT];
-	enemies[0].entityType = ENEMY;
-	enemies[0].aiType = SHOOTER;
-	enemies[0].aiState = IDLE;
-	enemies[0].textureID = enemy;
-	enemies[0].position = glm::vec3(1, 0, 0);
-	enemies[0].speed = 3.5f;
-	enemies[0].maxAmmo = 3;
-	enemies[0].Bullets = new Entity[enemies[0].maxAmmo];
-	for (int i = 0; i < enemies[0].maxAmmo; i++) {
-		enemies[0].Bullets[i].entityType = BULLET;
-		enemies[0].Bullets[i].speed = 9.5f;
-		enemies[0].Bullets[i].textureID = bullet;
-		enemies[0].Bullets[i].isActive = false;
-	}
-	enemies[0].shootSpacing = 0.35f;
-	enemies[0].isActive = true;
 
-	enemies[1].entityType = ENEMY;
-	enemies[1].aiType = DASHER;
-	enemies[1].aiState = IDLE;
-	enemies[1].textureID = enemy;
-	enemies[1].position = glm::vec3(2, 0, 0);
-	enemies[1].speed = 3.5f;
-	enemies[1].waitTime = 0.8f;
-	enemies[1].isActive = true;*/
-	//Keep the mouse in the screen -- handy for later!
+	font = Util::LoadTexture("font.png", false);
+	crosshair = Util::LoadTexture("crosshair.png", false);
+	currentMousePos = glm::vec3(0);
+	sceneList[0] = new Startup();
+	sceneList[1] = new Level1();
+	sceneList[2] = new Level2();
+	sceneList[3] = new Level3();
+
+
+	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
+	Mix_VolumeMusic(MIX_MAX_VOLUME / 3);
+	music = Mix_LoadMUS("HarmfulOrFatalKevinMacleod.mp3");
+	Mix_PlayMusic(music, -1);
+	Mix_Volume(-1, MIX_MAX_VOLUME / 6);
+
+
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 	paused = false;
 	SwitchToScene(sceneList[0]);
+	gameTimer = 300.0f;
 }
 
 void ProcessInput() {
 	SDL_Event event;
 	int mouseX, mouseY;
-
-	currentScene->state.player->movement = glm::vec3(0);
+	if(currentScene->state.player != NULL)
+		currentScene->state.player->movement = glm::vec3(0);
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
 		case SDL_QUIT:
 		case SDL_WINDOWEVENT_CLOSE:
 			gameIsRunning = false;
-			break;
+			return;
 		case SDL_KEYDOWN:
 			switch (event.key.keysym.sym) {
 			case SDLK_ESCAPE: // Some pause functionality!
-				if (paused == true) {
-					SDL_SetRelativeMouseMode(SDL_TRUE);
-					paused = false;
-				}
-				else {
-					SDL_SetRelativeMouseMode(SDL_FALSE);
-					paused = true;
+				if (currentScene != sceneList[0]) {
+					if (paused == true) {
+						SDL_SetRelativeMouseMode(SDL_TRUE);
+						paused = false;
+					}
+					else {
+						SDL_SetRelativeMouseMode(SDL_FALSE);
+						paused = true;
+					}
 				}
 				break;
+			case SDLK_RETURN:
+				if (currentScene == sceneList[0])
+					currentScene->state.nextScene = 1;
 			}			
 		case SDL_MOUSEBUTTONDOWN:
-			if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT && paused==false)
+			if (currentScene->state.player != NULL && event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT 
+				&& paused==false)
 				currentScene->state.player->Shoot();
 		}
 	}
 	const Uint8* keys = SDL_GetKeyboardState(NULL);
 	
-	if (paused == false) {
+	if (paused == false && currentScene->state.player != NULL) {
 		if (keys[SDL_SCANCODE_A]) {
 			currentScene->state.player->movement.x = -1.0f;
 		}
@@ -144,30 +151,36 @@ void ProcessInput() {
 			currentScene->state.player->movement.x = 1.0f;
 		}
 
-		if (keys[SDL_SCANCODE_W]) {
+		if (keys[SDL_SCANCODE_W] && currentScene->state.player->position.y<0) {
 			currentScene->state.player->movement.y = 1.0f;
 		}
-		else if (keys[SDL_SCANCODE_S]) {
+		else if (keys[SDL_SCANCODE_S] && currentScene->state.player->position.y>-30.0f) {
 			currentScene->state.player->movement.y = -1.0f;
 		}
+
+		if (keys[SDL_SCANCODE_LSHIFT]) {
+			peek = true;
+		}
+		else
+			peek = false;
+
+		if (keys[SDL_SCANCODE_R])
+			currentScene->state.player->reloading = true;
 
 		if (glm::length(currentScene->state.player->movement) > 1.0f)
 			currentScene->state.player->movement = glm::normalize(currentScene->state.player->movement);
 
 		SDL_GetMouseState(&mouseX, &mouseY);
 
-		//SDL_Log("Mouse positions %d %d", mouseX, mouseY);
-		//float variableWorldWidth = windowWidth; //+ currentScene->state.player->position.x;
-		//float variableWorldHeight = windowHeight; //+currentScene->state.player->position.y;
-		float currWorldX = 10.0f; //+currentScene->state.player->position.x;
-		float currWorldy = 7.5f;// +currentScene->state.player->position.y;
+		float currWorldX = 10.0f; 
+		float currWorldy = 7.5f;
 		worldX = (((float)mouseX / windowWidth) * currWorldX) - (currWorldX / 2.0f);
 		worldY = (((windowHeight - (float)mouseY) / windowHeight) * currWorldy) - (currWorldy/ 2.0f);
-		SDL_Log("World positions %f %f\n Screen positions %d %d", worldX, worldY, mouseX, mouseY);
+		currentMousePos.x = worldX + currentScene->state.player->position.x;
+		currentMousePos.y = worldY + currentScene->state.player->position.y;
 
-
-		float dX = worldX - currentScene->state.player->position.x;
-		float dY = worldY - currentScene->state.player->position.y;
+		float dX = currentMousePos.x - currentScene->state.player->position.x;
+		float dY = currentMousePos.y - currentScene->state.player->position.y;
 		currentScene->state.player->dirVec = glm::normalize(glm::vec3(dX, dY, 0));
 		currentScene->state.player->lookRotation = glm::atan(currentScene->state.player->dirVec.y, 
 			                                                 currentScene->state.player->dirVec.x);
@@ -190,7 +203,7 @@ void Update() {
 		return;
 	}
 
-	if (paused == false) {
+	if (paused == false && gameIsRunning==true) {
 		while (deltaTime >= FIXED_TIMESTEP) {
 			currentScene->Update(FIXED_TIMESTEP);
 			deltaTime -= FIXED_TIMESTEP;
@@ -199,33 +212,85 @@ void Update() {
 	
 		if (currentScene->state.player != NULL) {
 			viewMatrix = glm::mat4(1.0f);
-			viewMatrix = glm::translate(viewMatrix, glm::vec3(-currentScene->state.player->position.x, 
-				                                              -currentScene->state.player->position.y, 0));
+			float viewYpos;
+			if (peek == false) {
+				viewYpos = (currentScene->state.player->position.y > -25.0f) ?
+					((currentScene->state.player->position.y < -3.24f) ? -currentScene->state.player->position.y : 3.24f) : 25.0f;
+				viewMatrix = glm::translate(viewMatrix, glm::vec3(-currentScene->state.player->position.x, viewYpos, 0));
+			}
+			else {
+				viewYpos = (currentScene->state.player->position.y > -25.0f) ?
+					((currentScene->state.player->position.y < -3.24f) ? -currentMousePos.y-0.7f : 3.24f) : 25.0f;
+				viewMatrix = glm::translate(viewMatrix, glm::vec3(-currentMousePos.x, viewYpos, 0));
+			}
 		}
 	}
+	if (currentScene != sceneList[0] && paused==false && gameIsRunning)
+		gameTimer -= FIXED_TIMESTEP;
 }
 
 void Render() {
 	glClear(GL_COLOR_BUFFER_BIT);
 	program.SetViewMatrix(viewMatrix);
+	program.SetProjectionMatrix(projectionMatrix);
 	currentScene->Render(&program);
-	if(paused == false)
-		Util::DrawIcon(&program, crosshair, glm::vec3(worldX, worldY, 0));
+
+	if (paused == false && currentScene != sceneList[0]) {
+		Util::DrawIcon(&program, crosshair, glm::vec3(currentMousePos.x, currentMousePos.y, 0));
+	}
+	program.SetProjectionMatrix(projectionMatrixUI);
+	program.SetViewMatrix(viewMatrixUI);
+	if (currentScene == sceneList[0]) {
+		Util::DrawText(&program, font, "REVANCHIST", 0.7, 0.02, glm::vec3(-3.2, 2, 0));
+		Util::DrawText(&program, font, "Your spaceship has been taken", 0.2, 0.01, glm::vec3(-3.0, 1, 0));
+		Util::DrawText(&program, font, "by interdimensional cyborgs.", 0.2, 0.01, glm::vec3(-2.75, 0.6, 0));
+		Util::DrawText(&program, font, "Stop them! Before it's too late!", 0.2, 0.01, glm::vec3(-3.2, 0, 0));
+		Util::DrawText(&program, font, "Press [ENTER] to begin!", 0.2, 0.01, glm::vec3(-2.25, -1, 0));
+	}
+	if (currentScene != sceneList[0] && currentScene->state.player != NULL) {
+		Util::DrawText(&program, font, "Objective:", 0.2, 0.01, glm::vec3(-4.75,3.2,0));
+		Util::DrawText(&program, font, "Save the ship!", 0.2, 0.01, glm::vec3(-4.75, 3.0, 0));
+		std::string timer = std::to_string(int(gameTimer)) + " seconds left!";
+		Util::DrawText(&program, font, timer, 0.2, 0.01, glm::vec3(1.25, 3.2, 0));
+		int bullets = 12 - currentScene->state.player->currentBullet;
+		if (currentScene->state.player->reloading==false) {
+			std::string remainingBullets = std::to_string(bullets) + "/12";
+			Util::DrawText(&program, font, remainingBullets, 0.2, 0.01, glm::vec3(3.75, -3.2, 0));
+		}
+		else {
+			Util::DrawText(&program, font, "RELOADING", 0.2, 0.01, glm::vec3(3.15, -3.2, 0));
+		}
+		if (currentScene->state.player->endGood == true) {
+			SDL_SetRelativeMouseMode(SDL_FALSE);
+			paused = true; 
+			Util::DrawText(&program, font, "The ship is saved!", 0.3, 0.01, glm::vec3(-2.75, 1, 0));
+			Util::DrawText(&program, font, "Fly off, REVANCHIST!", 0.3, 0.01, glm::vec3(-3.0, 0.5, 0));
+		}
+		if (gameTimer <= 0) {
+			SDL_SetRelativeMouseMode(SDL_FALSE);
+			paused = true; 
+			Util::DrawText(&program, font, "You were too late.", 0.3, 0.01, glm::vec3(-2.2, 1, 0));
+			Util::DrawText(&program, font, "The ship was crashed into Earth.", 0.2, 0.01, glm::vec3(-3.0, 0, 0));
+		}
+	}
+
 	SDL_GL_SwapWindow(displayWindow);
 }
 
 void Shutdown() {
 	SDL_Quit();
-
 }
 
 int main(int argc, char* argv[]){
-	
 	Initialize();
 
 	while (gameIsRunning) {
 		ProcessInput();
 		Update();
+		if (currentScene->state.nextScene != -1) { 
+			int nextScene = currentScene->state.nextScene;
+			SwitchToScene(sceneList[nextScene]); 
+		}
 		Render();
 	}
 	Shutdown();

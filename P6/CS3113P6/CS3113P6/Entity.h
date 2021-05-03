@@ -17,7 +17,7 @@
 
 enum EntityType {PLAYER, PLATFORM, ENEMY, BULLET};
 
-enum AIType { CHASER, DASHER, SHOOTER, };
+enum AIType { CHASER, DASHER, SHOOTER, BOSS};
 enum AIState { IDLE, WALKING, DASHING, SHOOTING};
 
 class Entity {
@@ -34,11 +34,15 @@ public:
 
     glm::vec3 savedPoint; //For enemies
 
-    Entity* Bullets;
+    Entity* Bullets = NULL;
     int maxAmmo;
     int currentBullet;
+    int BossHP;
     float waitTime;
     float shootSpacing;
+
+    int dashCount;
+    int shotCount;
 
     float speed;
     float jumpPower = 0;
@@ -55,13 +59,16 @@ public:
     bool right=false;
 
     bool endGood;
+    bool canHit;
     bool gotHit;
     bool reloading = false;
-    float reloadTime = 1.5f;
+    float reloadTime;
+    float reloadingClock;
 
     GLuint textureID;
 
-    Mix_Chunk* killSound;
+    Mix_Chunk* shotSound;
+    Mix_Chunk* dasherSound;
 
     glm::mat4 modelMatrix;
 
@@ -87,5 +94,6 @@ public:
     void AIDasher(Entity* player, float deltaTime);
     void AIShooter(Entity* player, float deltaTime);
     void AIChaser(Entity* player);
+    void AIBoss(Entity* player, float deltaTime);
     void TurnHelperAI(Entity* player);
 };
